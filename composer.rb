@@ -1906,11 +1906,11 @@ stage_two do
     generate 'devise_invitable:install' if prefer :devise_modules, 'invitable'
     generate 'devise partner' # create the User model
     unless :apps4.to_s.include? 'rails-stripe-'
-      generate 'migration AddNameToUsers name:string'
+      generate 'migration AddNameToPartners name:string'
     end
     if (prefer :devise_modules, 'confirmable') || (prefer :devise_modules, 'invitable')
-      gsub_file 'app/models/user.rb', /:registerable,/, ":registerable, :confirmable,"
-      generate 'migration AddConfirmableToUsers confirmation_token:string confirmed_at:datetime confirmation_sent_at:datetime unconfirmed_email:string'
+      gsub_file 'app/models/partner.rb', /:registerable,/, ":registerable, :confirmable,"
+      generate 'migration AddConfirmableToPartners confirmation_token:string confirmed_at:datetime confirmation_sent_at:datetime unconfirmed_email:string'
     end
     run 'bundle exec rake db:migrate'
   end
@@ -1938,9 +1938,9 @@ stage_two do
     repo = 'https://raw.github.com/RailsApps/rails-omniauth/master/'
     copy_from_repo 'config/initializers/omniauth.rb', :repo => repo
     gsub_file 'config/initializers/omniauth.rb', /twitter/, prefs[:omniauth_provider] unless prefer :omniauth_provider, 'twitter'
-    generate 'model User name:string provider:string uid:string'
+    generate 'model Partner name:string provider:string uid:string'
     run 'bundle exec rake db:migrate'
-    copy_from_repo 'app/models/user.rb', :repo => 'https://raw.github.com/RailsApps/rails-omniauth/master/'
+    copy_from_repo 'app/models/partner.rb', :repo => 'https://raw.github.com/RailsApps/rails-omniauth/master/'
     copy_from_repo 'app/controllers/application_controller.rb', :repo => repo
     filename = 'app/controllers/sessions_controller.rb'
     copy_from_repo filename, :repo => repo
@@ -1975,16 +1975,16 @@ stage_two do
   say_wizard "recipe stage two"
   if (prefer :authorization, 'roles') || (prefer :authorization, 'pundit')
     if prefer :authentication, 'none'
-      generate 'model User email:string'
+      generate 'model Partner email:string'
       run 'bundle exec rake db:migrate'
     end
-    generate 'migration AddRoleToUsers role:integer'
+    generate 'migration AddRoleToPartners role:integer'
     role_boilerplate = "  enum role: [:user, :vip, :admin]\n  after_initialize :set_default_role, :if => :new_record?\n\n"
     role_boilerplate << "  def set_default_role\n    self.role ||= :user\n  end\n\n" if prefer :authentication, 'devise'
     if prefer :authentication, 'omniauth'
       role_boilerplate << <<-RUBY
   def set_default_role
-    if User.count == 0
+    if Partner.count == 0
       self.role ||= :admin
     else
       self.role ||= :user
@@ -1992,7 +1992,7 @@ stage_two do
   end
 RUBY
     end
-    inject_into_class 'app/models/user.rb', 'User', role_boilerplate
+    inject_into_class 'app/models/partner.rb', 'Partner', role_boilerplate
   end
   ### GIT ###
   git :add => '-A' if prefer :git, true
