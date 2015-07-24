@@ -1904,7 +1904,7 @@ stage_two do
     gsub_file 'config/initializers/filter_parameter_logging.rb', /:password/, ':password, :password_confirmation'
     generate 'devise:install'
     generate 'devise_invitable:install' if prefer :devise_modules, 'invitable'
-    generate 'devise user' # create the User model
+    generate 'devise partner' # create the User model
     unless :apps4.to_s.include? 'rails-stripe-'
       generate 'migration AddNameToUsers name:string'
     end
